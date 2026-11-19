@@ -1,0 +1,8 @@
+.{
+    .name = .Carmine,
+    .version = "0.0.0",
+    .fingerprint = 0xe0d9d3450e4fea02,
+    .minimum_zig_version = "0.17.1",
+    .dependencies = .{},
+    .paths = .{ "build.zig", "build.zig.zon", "build", "ksrc", "boot", "scripts", "linker.ld", "README.md", ".zigversion" },
+}
