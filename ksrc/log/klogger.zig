@@ -7,6 +7,7 @@ pub fn init() void {
     serial.init();
 }
 
+// 先直接写到串口, TODO: 在klog_ringbuffer完善之后写到buffer中
 pub fn kprintf(comptime format: []const u8, args: anytype) void {
     const text = std.mem.print(&format_buf, format, args) catch {
         @panic("Kernel Panic: no memory left for formatting!");

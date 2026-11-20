@@ -24,5 +24,10 @@ SECTIONS
     . = ALIGN(0x1000);
     .data : { *(.data .data.*) } :data
     .bss : { *(.bss .bss.*) *(COMMON) } :data
+    .early.logbuf : ALIGN(4096) {
+        __logbuf_start = .;
+        KEEP(*(.init.logbuf))
+        __logbuf_end = .;
+    }
     /DISCARD/ : { *(.eh_frame*) *(.note .note.*) }
 }

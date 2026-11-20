@@ -3,10 +3,12 @@ const limine = @import("limine.zig");
 export var requests_start: [4]u64 align(8) linksection(".limine_requests_start") = limine.requests_start;
 export var base_revision: [3]u64 align(8) linksection(".limine_requests") = limine.revision_tag;
 export var framebuffer_request: limine.Request(limine.FramebufferResponse) align(8) linksection(".limine_requests") = .{ .id = limine.framebuffer_id };
+export var mp_request: limine.MpRequest align(8) linksection(".limine_requests") = .{};
 export var requests_end: [2]u64 align(8) linksection(".limine_requests_end") = limine.requests_end;
 
 pub const bootInfo = struct {
     startup_time: u64 = undefined,
+    mp: ?*const limine.MpResponse,
     framebuffer: *const limine.Framebuffer,
 };
 
@@ -26,6 +28,7 @@ pub fn init() bootInfo {
 
     return .{
         .startup_time = 0,
+        .mp = @as(*volatile limine.MpRequest, &mp_request).response,
         .framebuffer = fb,
     };
 }

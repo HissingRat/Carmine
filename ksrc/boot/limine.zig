@@ -144,6 +144,37 @@ pub const FramebufferResponse = extern struct {
     framebuffers: [*]const *const Framebuffer,
 };
 
+pub const MpInfo = extern struct {
+    processor_id: u32,
+    lapic_id: u32,
+    reserved: u64,
+    goto_addr: u64,
+    extra_args: u64,
+};
+
+pub const MpResponse = extern struct {
+    revision: u64,
+    flags: u32,
+    bsp_lapic_id: u32,
+    cpu_count: u64,
+    cpus: [*]const *MpInfo,
+};
+
+pub const MpRequest = extern struct {
+    id: [4]u64 = .{ 0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, 0x95a67b819a1b857e, 0xa0b61b723b6a73e0 },
+    revision: u64 = 0,
+    response: ?*const MpResponse = null,
+    flags: u64 = 0,
+};
+
+comptime {
+    if (@sizeOf(MpInfo) != 32 or
+        @offsetOf(MpInfo, "goto_addr") != 16 or
+        @sizeOf(MpResponse) != 32 or
+        @sizeOf(MpRequest) != 56)
+        @compileError("invalid Limine MP layout");
+}
+
 comptime {
     if (@sizeOf(Framebuffer) != 80 or
         @offsetOf(Framebuffer, "pitch") != 24 or

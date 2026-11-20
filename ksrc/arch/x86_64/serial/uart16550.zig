@@ -1,4 +1,4 @@
-const io = @import("../cpu.zig");
+const io = @import("../cpuio.zig");
 
 const com1: u16 = 0x3f8;
 

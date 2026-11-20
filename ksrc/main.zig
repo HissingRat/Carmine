@@ -1,14 +1,17 @@
 const boot = @import("boot/boot.zig");
-const cpu = @import("arch/x86_64/cpu.zig");
+const cpuio = @import("arch/x86_64/cpuio.zig");
 const framebuffer = @import("drivers/graphics/framebuffer.zig");
 const logger = @import("log/klogger.zig");
+const cpu = @import("arch/x86_64/cpu.zig");
 
 export fn _start() callconv(.c) noreturn {
-    cpu.disableInterrupts();
+    cpuio.disableInterrupts();
     logger.init();
-    logger.kprint("loading Carmine 0.0.1");
+    logger.kprint("loading Carmine 0.0.1\n");
 
     const boot_info = boot.init();
+
+    cpu.init(boot_info);
 
     const fb = framebuffer.init(boot_info.framebuffer);
     const blue = fb.rgb(30, 120, 255);
@@ -20,5 +23,5 @@ export fn _start() callconv(.c) noreturn {
     }
 
     logger.kprint("Carmine loaded");
-    cpu.halt();
+    cpuio.halt();
 }

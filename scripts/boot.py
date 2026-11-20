@@ -75,7 +75,7 @@ def qemu_command(iso):
     return [
         "qemu-system-x86_64", "-accel", "tcg", "-m", "128M",
         "-cdrom", iso, "-boot", "d", "-no-reboot", "-no-shutdown",
-        "-monitor", "none", "-net", "none",
+        "-monitor", "none", "-net", "none", "-smp", "4"
     ]
 
 
