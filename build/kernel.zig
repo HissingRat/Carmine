@@ -25,7 +25,18 @@ pub fn add(b: *std.Build, optimize: std.builtin.Optimize) *std.Build.Step.Compil
         .use_llvm = true,
         .use_lld = true,
     });
+    addASMFiles(b, kernel.root_module);
     kernel.entry = .{ .symbol_name = "_start" };
     kernel.setLinkerScript(b.path("linker.ld"));
     return kernel;
+}
+
+fn addASMFiles(b: *std.Build, module: *std.Build.Module) void {
+    for ([_][]const u8{
+        "ksrc/arch/x86_64/percpu/interrupts/interrupts.asm",
+    }) |path|
+        module.addCSourceFile(.{
+            .file = b.path(path),
+            .language = .assembly,
+        });
 }

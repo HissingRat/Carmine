@@ -1,5 +1,6 @@
 const PerCpuGdt = @import("percpu/gdt.zig").PerCpuGdt;
 const PerCpuTss = @import("percpu/tss.zig").PerCpuTss;
+const PerCpuIdt = @import("percpu/idt.zig").PerCpuIdt;
 const limine = @import("../../boot/limine.zig");
 const bootInfo = @import("../../boot/boot.zig").bootInfo;
 const logger = @import("../../log/klogger.zig");
@@ -11,9 +12,10 @@ const Cpu = struct {
 
     gdt: PerCpuGdt,
     tss: PerCpuTss,
+    idt: PerCpuIdt,
 
     kernel_stack: [kopts.KERNEL_STACK_SIZE]u8,
-    interrupt_stack: [kopts.INT_STACK_SIZE]u8,
+    interrupt_stacks: [7][kopts.INT_STACK_SIZE]u8,
 
     //加scheduler之类的
 };
@@ -39,6 +41,7 @@ fn start_aps(response: *const limine.MpResponse) void {
 
         if (cpu_info.lapic_id == response.bsp_lapic_id) {
             cur_cpu.gdt.init_gdt(&cur_cpu.tss);
+            cur_cpu.idt.init_idt();
             continue;
         }
 
@@ -60,17 +63,26 @@ fn init_percpu(index: usize, lapic_id: u32) *Cpu {
         .lapic_id = lapic_id,
         .gdt = .{},
         .tss = .{},
+        .idt = .{},
         .kernel_stack = undefined,
-        .interrupt_stack = undefined,
+        .interrupt_stacks = undefined,
     };
     cpu.tss.rsp0 = @intFromPtr(&cpu.kernel_stack) + kopts.KERNEL_STACK_SIZE;
-    cpu.tss.ist1 = @intFromPtr(&cpu.interrupt_stack) + kopts.INT_STACK_SIZE;
+    const stacks = &cpu.interrupt_stacks;
+    cpu.tss.ist1 = @intFromPtr(&stacks[0]) + stacks[0].len;
+    cpu.tss.ist2 = @intFromPtr(&stacks[1]) + stacks[1].len;
+    cpu.tss.ist3 = @intFromPtr(&stacks[2]) + stacks[2].len;
+    cpu.tss.ist4 = @intFromPtr(&stacks[3]) + stacks[3].len;
+    cpu.tss.ist5 = @intFromPtr(&stacks[4]) + stacks[3].len;
+    cpu.tss.ist6 = @intFromPtr(&stacks[5]) + stacks[3].len;
+    cpu.tss.ist7 = @intFromPtr(&stacks[6]) + stacks[3].len;
     return cpu;
 }
 
 fn ap_entry(info: *limine.MpInfo) callconv(.c) noreturn {
     const cur_cpu: *Cpu = @ptrFromInt(info.extra_args);
     cur_cpu.gdt.init_gdt(&cur_cpu.tss);
+    cur_cpu.idt.init_idt();
     // TODO: 接入每个核心的调度器
     @import("cpuio.zig").halt();
 }

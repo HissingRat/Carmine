@@ -58,9 +58,23 @@ pub const PerCpuGdt = struct {
             : [ptr] "r" (&gdtr_ptr),
             : .{ .memory = true });
     }
+};
 
-    fn create_gdt(entry: *GdtEntry, base: u64, limit: u20, access: u8, flags: u4) void {
-        entry.* = .{
+fn create_gdt(entry: *GdtEntry, base: u64, limit: u20, access: u8, flags: u4) void {
+    entry.* = .{
+        .limit_low = @truncate(limit),
+        .base_low = @truncate(base),
+        .base_mid = @truncate(base >> 16),
+        .access_byte = access,
+        .limit_high = @truncate(limit >> 16),
+        .flags = flags,
+        .base_high = @truncate(base >> 24),
+    };
+}
+
+fn create_tss(entry: *TssEntry, base: u64, limit: u20, access: u8, flags: u4) void {
+    entry.* = .{
+        .gdt = .{
             .limit_low = @truncate(limit),
             .base_low = @truncate(base),
             .base_mid = @truncate(base >> 16),
@@ -68,24 +82,10 @@ pub const PerCpuGdt = struct {
             .limit_high = @truncate(limit >> 16),
             .flags = flags,
             .base_high = @truncate(base >> 24),
-        };
-    }
-
-    fn create_tss(entry: *TssEntry, base: u64, limit: u20, access: u8, flags: u4) void {
-        entry.* = .{
-            .gdt = .{
-                .limit_low = @truncate(limit),
-                .base_low = @truncate(base),
-                .base_mid = @truncate(base >> 16),
-                .access_byte = access,
-                .limit_high = @truncate(limit >> 16),
-                .flags = flags,
-                .base_high = @truncate(base >> 24),
-            },
-            .base_upper = @truncate(base >> 32),
-        };
-    }
-};
+        },
+        .base_upper = @truncate(base >> 32),
+    };
+}
 
 fn load_task_register() void {
     const offset: u16 = @offsetOf(GdtTable, "tss");

@@ -1,6 +1,6 @@
 /// https://wiki.osdev.org/Task_State_Segment
 
-// 不要用packed struct, 否则size会变成 112 bytes而非 104 bytes
+// 不要用packed struct, 否则size会变成 112 bytes 而非 104 bytes
 pub const PerCpuTss = extern struct {
     reserved0: u32 = 0,
 

@@ -13,6 +13,9 @@ export fn _start() callconv(.c) noreturn {
 
     cpu.init(boot_info);
 
+    asm volatile ("int3");
+    // @panic("test panic");
+
     const fb = framebuffer.init(boot_info.framebuffer);
     const blue = fb.rgb(30, 120, 255);
 
@@ -22,6 +25,6 @@ export fn _start() callconv(.c) noreturn {
         }
     }
 
-    logger.kprint("Carmine loaded");
+    logger.kprint("Carmine loaded.\n");
     cpuio.halt();
 }
