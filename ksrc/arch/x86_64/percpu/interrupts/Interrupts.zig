@@ -29,7 +29,7 @@ const InterruptFrame = extern struct {
     ss: u64,
 };
 
-export fn interrupt_dispatch(frame: *const InterruptFrame) callconv(.c) void {
+export fn interruptDispatch(frame: *const InterruptFrame) callconv(.c) void {
     switch (frame.vector) {
         3 => {
             klogger.kprint("detected int3!!!!\n");

@@ -26,18 +26,18 @@ var cpu_count: usize = 0;
 
 pub fn init(info: bootInfo) void {
     if (info.mp) |mp|
-        start_aps(mp);
+        startAps(mp);
     logger.kprintf("Detected {d} cpus.\n", .{cpu_count});
 }
 
-pub fn init_bsp() void {
-    const cur_cpu = init_percpu(0, 0);
-    cur_cpu.gdt.init_gdt(&cur_cpu.tss);
-    cur_cpu.idt.init_idt();
+pub fn initBsp() void {
+    const cur_cpu = initPerCpu(0, 0);
+    cur_cpu.gdt.initGdt(&cur_cpu.tss);
+    cur_cpu.idt.initIdt();
     cpu_count += 1;
 }
 
-fn start_aps(response: *const limine.MpResponse) void {
+fn startAps(response: *const limine.MpResponse) void {
     const cpu_infos = response.cpus[0..response.cpu_count];
 
     var index: usize = 1;
@@ -49,7 +49,7 @@ fn start_aps(response: *const limine.MpResponse) void {
             continue;
         }
 
-        const cur_cpu = init_percpu(index, cpu_info.lapic_id);
+        const cur_cpu = initPerCpu(index, cpu_info.lapic_id);
         cpu_count += 1;
         index += 1;
 
@@ -58,13 +58,13 @@ fn start_aps(response: *const limine.MpResponse) void {
         @atomicStore(
             u64,
             &cpu_info.goto_addr,
-            @intFromPtr(&ap_entry),
+            @intFromPtr(&apEntry),
             .release,
         );
     }
 }
 
-fn init_percpu(index: usize, lapic_id: u32) *Cpu {
+fn initPerCpu(index: usize, lapic_id: u32) *Cpu {
     const cpu = &cpus[index];
     cpu.* = .{
         .index = index,
@@ -87,10 +87,10 @@ fn init_percpu(index: usize, lapic_id: u32) *Cpu {
     return cpu;
 }
 
-fn ap_entry(info: *limine.MpInfo) callconv(.c) noreturn {
+fn apEntry(info: *limine.MpInfo) callconv(.c) noreturn {
     const cur_cpu: *Cpu = @ptrFromInt(info.extra_args);
-    cur_cpu.gdt.init_gdt(&cur_cpu.tss);
-    cur_cpu.idt.init_idt();
+    cur_cpu.gdt.initGdt(&cur_cpu.tss);
+    cur_cpu.idt.initIdt();
     // TODO: 接入每个核心的调度器
     @import("cpuio.zig").halt();
 }

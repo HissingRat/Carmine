@@ -5,7 +5,7 @@ const INT: u4 = 0xE;
 const TRAP: u4 = 0xF;
 
 // https://wiki.osdev.org/Interrupt_Descriptor_Table#IDT_items
-pub fn gate_type(vec: u64) u4 {
+pub fn gateType(vec: u64) u4 {
     return switch (vec) {
         0, 2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 => INT,
         1, 3, 4 => TRAP,

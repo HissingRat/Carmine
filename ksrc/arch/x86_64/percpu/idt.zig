@@ -27,11 +27,11 @@ const Idtr = packed struct {
 pub const PerCpuIdt = struct {
     idt_table: [isrs.isr_table_size]IdtEntry = undefined,
 
-    pub fn init_idt(this: *PerCpuIdt) void {
+    pub fn initIdt(this: *PerCpuIdt) void {
         for (0..isrs.isr_table_size) |vec| {
-            this.idt_table[vec] = create_idt(
+            this.idt_table[vec] = createIdt(
                 isrs.isr_table[vec],
-                isrs.gate_type(vec),
+                isrs.gateType(vec),
                 isrs.ist(vec),
                 0x00,
             );
@@ -52,7 +52,7 @@ pub const PerCpuIdt = struct {
     }
 };
 
-fn create_idt(addr: usize, gate_type: u4, ist: u3, dpl: u2) IdtEntry {
+fn createIdt(addr: usize, gate_type: u4, ist: u3, dpl: u2) IdtEntry {
     return .{
         .offset1 = @truncate(addr),
         .offset2 = @truncate(addr >> 16),

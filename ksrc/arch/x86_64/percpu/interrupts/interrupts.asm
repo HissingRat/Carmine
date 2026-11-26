@@ -1,5 +1,5 @@
 .section .text
-.extern interrupt_dispatch
+.extern interruptDispatch
 
 .macro ISR vector, error=0    ;# 没有error code, 手动push一个 0 作为error code, 然后push vector
 .global isr\vector            ;# 有error code, cpu会先push error code, 那我们直接push vector
@@ -32,7 +32,7 @@ isr_common:
     push %r15
 
     movq %rsp, %rdi          ;# 加载第一个参数: *InterruptFrame
-    call interrupt_dispatch
+    call interruptDispatch
 
     pop %r15
     pop %r14

@@ -7,7 +7,7 @@ const mem_early = @import("mem/early.zig");
 
 export fn _start() callconv(.c) noreturn {
     cpuio.disableInterrupts();
-    cpu.init_bsp();
+    cpu.initBsp();
     logger.init();
     const boot_info = boot.init();
 

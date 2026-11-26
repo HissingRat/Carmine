@@ -35,16 +35,16 @@ const GdtTable = extern struct {
 pub const PerCpuGdt = struct {
     gdt_table: GdtTable = undefined,
 
-    pub fn init_gdt(this: *PerCpuGdt, tss: *PerCpuTss) void {
-        create_gdt(&this.gdt_table.empty, 0, 0x00000, 0x00, 0x0);
-        create_gdt(&this.gdt_table.kernel_code, 0, 0xFFFFF, 0x9A, 0xA);
-        create_gdt(&this.gdt_table.kernel_data, 0, 0xFFFFF, 0x92, 0xC);
-        create_gdt(&this.gdt_table.user_data, 0, 0xFFFFF, 0xF2, 0xC);
-        create_gdt(&this.gdt_table.user_code, 0, 0xFFFFF, 0xFA, 0xA);
-        create_tss(&this.gdt_table.tss, @intFromPtr(tss), @sizeOf(PerCpuTss) - 1, 0x89, 0x0);
+    pub fn initGdt(this: *PerCpuGdt, tss: *PerCpuTss) void {
+        createGdt(&this.gdt_table.empty, 0, 0x00000, 0x00, 0x0);
+        createGdt(&this.gdt_table.kernel_code, 0, 0xFFFFF, 0x9A, 0xA);
+        createGdt(&this.gdt_table.kernel_data, 0, 0xFFFFF, 0x92, 0xC);
+        createGdt(&this.gdt_table.user_data, 0, 0xFFFFF, 0xF2, 0xC);
+        createGdt(&this.gdt_table.user_code, 0, 0xFFFFF, 0xFA, 0xA);
+        createTss(&this.gdt_table.tss, @intFromPtr(tss), @sizeOf(PerCpuTss) - 1, 0x89, 0x0);
         this.lgdt();
-        reload_segments();
-        load_task_register();
+        reloadSegments();
+        loadTaskRegister();
     }
 
     fn lgdt(this: *PerCpuGdt) void {
@@ -60,7 +60,7 @@ pub const PerCpuGdt = struct {
     }
 };
 
-fn create_gdt(entry: *GdtEntry, base: u64, limit: u20, access: u8, flags: u4) void {
+fn createGdt(entry: *GdtEntry, base: u64, limit: u20, access: u8, flags: u4) void {
     entry.* = .{
         .limit_low = @truncate(limit),
         .base_low = @truncate(base),
@@ -72,7 +72,7 @@ fn create_gdt(entry: *GdtEntry, base: u64, limit: u20, access: u8, flags: u4) vo
     };
 }
 
-fn create_tss(entry: *TssEntry, base: u64, limit: u20, access: u8, flags: u4) void {
+fn createTss(entry: *TssEntry, base: u64, limit: u20, access: u8, flags: u4) void {
     entry.* = .{
         .gdt = .{
             .limit_low = @truncate(limit),
@@ -87,7 +87,7 @@ fn create_tss(entry: *TssEntry, base: u64, limit: u20, access: u8, flags: u4) vo
     };
 }
 
-fn load_task_register() void {
+fn loadTaskRegister() void {
     const offset: u16 = @offsetOf(GdtTable, "tss");
     asm volatile ("ltr %[selector]"
         :
@@ -95,13 +95,13 @@ fn load_task_register() void {
         : .{ .memory = true });
 }
 
-extern fn reload_segments() callconv(.c) void;
+extern fn reloadSegments() callconv(.c) void;
 
 comptime {
     asm (
-        \\.global reload_segments
-        \\.type reload_segments, @function
-        \\reload_segments:
+        \\.global reloadSegments
+        \\.type reloadSegments, @function
+        \\reloadSegments:
         \\  pushq $0x08
         \\  leaq 1f(%rip), %rax
         \\  pushq %rax
