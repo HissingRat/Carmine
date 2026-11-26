@@ -24,26 +24,34 @@ const max_cups: u32 = 16;
 var cpus: [max_cups]Cpu = undefined; //TODO: 等内存管理完工后换成动态分配
 var cpu_count: usize = 0;
 
-pub fn init(boot_info: bootInfo) void {
-    if (boot_info.mp) |mp|
+pub fn init(info: bootInfo) void {
+    if (info.mp) |mp|
         start_aps(mp);
     logger.kprintf("Detected {d} cpus.\n", .{cpu_count});
+}
+
+pub fn init_bsp() void {
+    const cur_cpu = init_percpu(0, 0);
+    cur_cpu.gdt.init_gdt(&cur_cpu.tss);
+    cur_cpu.idt.init_idt();
+    cpu_count += 1;
 }
 
 fn start_aps(response: *const limine.MpResponse) void {
     const cpu_infos = response.cpus[0..response.cpu_count];
 
-    for (cpu_infos, 0..) |cpu_info, index| {
+    var index: usize = 1;
+    for (cpu_infos) |cpu_info| {
         if (index >= max_cups) @panic("TOO MANY CPUS");
+
+        if (cpu_info.lapic_id == response.bsp_lapic_id) {
+            cpus[0].lapic_id = cpu_info.lapic_id;
+            continue;
+        }
 
         const cur_cpu = init_percpu(index, cpu_info.lapic_id);
         cpu_count += 1;
-
-        if (cpu_info.lapic_id == response.bsp_lapic_id) {
-            cur_cpu.gdt.init_gdt(&cur_cpu.tss);
-            cur_cpu.idt.init_idt();
-            continue;
-        }
+        index += 1;
 
         cpu_info.extra_args = @intFromPtr(cur_cpu);
 

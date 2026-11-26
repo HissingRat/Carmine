@@ -18,9 +18,33 @@ pub fn Request(comptime Response: type) type {
     };
 }
 
+pub const boot_date_id: [4]u64 = .{
+    0xc7b1dd30df4c8b88, 0x0a82e883a194f07b,
+    0x502746e184c088aa, 0xfbc5ec83e6327893,
+};
+
 pub const stack_size_id: [4]u64 = .{
     0xc7b1dd30df4c8b88, 0x0a82e883a194f07b,
     0x224ef0460a8e8926, 0xe1cb0fc25f46ea3d,
+};
+
+pub const memory_map_id: [4]u64 = .{
+    0xc7b1dd30df4c8b88, 0x0a82e883a194f07b,
+    0x67cf3d9d378a806f, 0xe304acdfc50c3c62,
+};
+pub const hhdm_id: [4]u64 = .{
+    0xc7b1dd30df4c8b88, 0x0a82e883a194f07b,
+    0x48dcf1cb8ad2b852, 0x63984e959a98244b,
+};
+
+pub const framebuffer_id: [4]u64 = .{
+    0xc7b1dd30df4c8b88, 0x0a82e883a194f07b,
+    0x9d5827dcd881dd75, 0xa3148604f6fab11b,
+};
+
+pub const module_id: [4]u64 = .{
+    0xc7b1dd30df4c8b88, 0x0a82e883a194f07b,
+    0x3e7e279702be32af, 0xca1c4f3bd1280cee,
 };
 
 pub const stackSizeResponse = extern struct {
@@ -68,21 +92,6 @@ pub const HhdmResponse = extern struct {
     offset: u64,
 };
 
-pub const memory_map_id: [4]u64 = .{
-    0xc7b1dd30df4c8b88, 0x0a82e883a194f07b,
-    0x67cf3d9d378a806f, 0xe304acdfc50c3c62,
-};
-pub const hhdm_id: [4]u64 = .{
-    0xc7b1dd30df4c8b88, 0x0a82e883a194f07b,
-    0x48dcf1cb8ad2b852, 0x63984e959a98244b,
-};
-
-pub const framebuffer_id: [4]u64 = .{
-    0xc7b1dd30df4c8b88, 0x0a82e883a194f07b,
-    0x9d5827dcd881dd75, 0xa3148604f6fab11b,
-};
-
-pub const module_id: [4]u64 = .{ 0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, 0x3e7e279702be32af, 0xca1c4f3bd1280cee };
 pub const moduleFile = extern struct {
     revision: u64,
     address: [*]const u8,
@@ -165,6 +174,11 @@ pub const MpRequest = extern struct {
     revision: u64 = 0,
     response: ?*const MpResponse = null,
     flags: u64 = 0,
+};
+
+pub const DateResponce = extern struct {
+    revision: u64,
+    timestamp: i64,
 };
 
 comptime {
